@@ -25,19 +25,19 @@ def get_tasks(db=Depends(get_db), current_user=Depends(auth.get_current_user)):
 @router.get("/get-task/{id}")
 def get_task_by_id(id:int, db=Depends(get_db), current_user=Depends(auth.get_current_user)):
     task = db.query(Task).filter(Task.id == id).first()
-    if task.user_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Not authorized to access this task")
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
+    if task.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to access this task")
     return task
 
 @router.put("/update-task")
 def update_task(id:int, task:TaskCreate, db=Depends(get_db), current_user=Depends(auth.get_current_user)):
     task_exist = db.query(Task).filter(Task.id == id).first()
-    if task_exist.user_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Not authorized to access this task")
     if not task_exist:
         raise HTTPException(status_code=404, detail="Task not found")
+    if task_exist.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to access this task")
     for key, value in task.model_dump().items():
         setattr(task_exist, key, value)
     db.commit()
@@ -47,10 +47,10 @@ def update_task(id:int, task:TaskCreate, db=Depends(get_db), current_user=Depend
 @router.delete("/delete-task")
 def delete_task(id:int, db=Depends(get_db), current_user=Depends(auth.get_current_user)):
     task_exist = db.query(Task).filter(Task.id == id).first()
-    if task_exist.user_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Not authorized to access this task")
     if not task_exist:
         raise HTTPException(status_code=404, detail="Task not found")
+    if task_exist.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to access this task")
     db.delete(task_exist)
     db.commit()
     return {"message":"Task is deleted"}
