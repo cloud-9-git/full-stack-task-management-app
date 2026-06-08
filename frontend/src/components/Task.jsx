@@ -8,6 +8,12 @@ const Task = () => {
     const [editable, setEditable] = useState(null)
     const [inputTask, setInputTask] = useState("")
 
+    const toTaskPayload = (task) => ({
+        title: task.title,
+        description: task.description ?? null,
+        completed: task.completed,
+    })
+
     const editTask=(e, id)=>{
         setTasks(items => items.map(item=>item.id === id ? {...item, title:e.target.value}: item))
     }
@@ -16,7 +22,7 @@ const Task = () => {
         const task = tasks.find(t => t.id === id)
         if (!task) return
         try {
-            await instance.put(ENDPOINTS.UPDATE_TASK(id), task)
+            await instance.put(ENDPOINTS.UPDATE_TASK(id), toTaskPayload(task))
             toast.success("Task updated successfully")
             getAllTasks()
             setEditable(null)
@@ -30,7 +36,7 @@ const Task = () => {
         if (!task) return
         const updatedTask = { ...task, completed: !task.completed }
         try {
-            await instance.put(ENDPOINTS.UPDATE_TASK(id), updatedTask)
+            await instance.put(ENDPOINTS.UPDATE_TASK(id), toTaskPayload(updatedTask))
             toast.success("Task updated successfully")
             getAllTasks()
         } catch (err) {
