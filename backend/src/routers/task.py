@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
-from ..schemas import TaskCreate
-from ..database import session, get_db
+from ..schemas import TaskCreate, TaskResponse
+from ..database import get_db
 from ..models import Task
 from ..security import auth
 
 router = APIRouter(prefix="/tasks", tags=["Tasks"])
 
-@router.post("/create-task")
+@router.post("/create-task", response_model=TaskResponse)
 def create_task(task : TaskCreate, db=Depends(get_db), current_user = Depends(auth.get_current_user)):
     new_task = Task(**task.model_dump(), user_id = current_user.id)
     db.add(new_task)
@@ -14,7 +14,7 @@ def create_task(task : TaskCreate, db=Depends(get_db), current_user = Depends(au
     db.refresh(new_task)
     return new_task
 
-@router.get("/get-tasks")
+@router.get("/get-tasks", response_model=list[TaskResponse])
 def get_tasks(db=Depends(get_db), current_user=Depends(auth.get_current_user)):
     try:
         tasks = db.query(Task).filter(Task.user_id == current_user.id).all()
@@ -23,7 +23,7 @@ def get_tasks(db=Depends(get_db), current_user=Depends(auth.get_current_user)):
         print(f"Error {e}")
         raise HTTPException(status_code=500, detail="Failed to get tasks")
 
-@router.get("/get-task/{id}")
+@router.get("/get-task/{id}", response_model=TaskResponse)
 def get_task_by_id(id:int, db=Depends(get_db), current_user=Depends(auth.get_current_user)):
     task = db.query(Task).filter(Task.id == id).first()
     if not task:
@@ -32,7 +32,7 @@ def get_task_by_id(id:int, db=Depends(get_db), current_user=Depends(auth.get_cur
         raise HTTPException(status_code=403, detail="Not authorized to access this task")
     return task
 
-@router.put("/update-task")
+@router.put("/update-task", response_model=TaskResponse)
 def update_task(id:int, task:TaskCreate, db=Depends(get_db), current_user=Depends(auth.get_current_user)):
     task_exist = db.query(Task).filter(Task.id == id).first()
     if not task_exist:
