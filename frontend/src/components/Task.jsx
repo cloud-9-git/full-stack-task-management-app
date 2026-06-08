@@ -7,15 +7,20 @@ const Task = () => {
     const [tasks, setTasks]=useState([])
     const [editable, setEditable] = useState(null)
     const [inputTask, setInputTask] = useState("")
+    const [inputDescription, setInputDescription] = useState("")
 
     const toTaskPayload = (task) => ({
         title: task.title,
-        description: task.description ?? null,
+        description: task.description?.trim() || null,
         completed: task.completed,
     })
 
     const editTask=(e, id)=>{
         setTasks(items => items.map(item=>item.id === id ? {...item, title:e.target.value}: item))
+    }
+
+    const editDescription=(e, id)=>{
+        setTasks(items => items.map(item=>item.id === id ? {...item, description:e.target.value}: item))
     }
 
     const saveTask=async(id)=>{
@@ -51,10 +56,15 @@ const Task = () => {
             return
         }
         try {
-            await instance.post(ENDPOINTS.CREATE_TASK(), { title: trimmedTask, completed: false })
+            await instance.post(ENDPOINTS.CREATE_TASK(), {
+                title: trimmedTask,
+                description: inputDescription.trim() || null,
+                completed: false,
+            })
             toast.success("Task created successfully")
             getAllTasks()
             setInputTask("")
+            setInputDescription("")
         } catch (err) {
             console.error(err)
         }
@@ -83,41 +93,67 @@ const Task = () => {
         getAllTasks()
     },[])
     
-  return (
-    <>
-        <div className='container'>
-            <div className='input-box'>
-                <input type="text" value={inputTask} onChange={(e)=>setInputTask(e.target.value)}></input>
-                <span className='add' onClick={addTask}>Add</span>
-            </div>
-            <div className='task-container'>
-                {
-                    tasks.map((item)=> {
-                        return (
-                            <div key={item.id} className='task-items' style={{backgroundColor: item.completed ? "#98FF98" : "white"}}>
-                                <div className='task-title'>
-                                    <div className=''>
-                                        <label className='title'>Title : </label>
-                                        <input type="text" 
-                                        value={item.title}
-                                        disabled={editable !== item.id} 
-                                        onChange={(e)=>editTask(e, item.id)}></input>
+    return (
+        <>
+            <div className='container'>
+                <div className='input-box'>
+                    <div className='task-input-fields'>
+                        <input
+                            type="text"
+                            value={inputTask}
+                            onChange={(e)=>setInputTask(e.target.value)}
+                            placeholder='Title'
+                        />
+                        <textarea
+                            value={inputDescription}
+                            onChange={(e)=>setInputDescription(e.target.value)}
+                            placeholder='Description'
+                        />
+                    </div>
+                    <button type="button" className='add' onClick={addTask}>Add</button>
+                </div>
+                <div className='task-container'>
+                    {
+                        tasks.map((item)=> {
+                            return (
+                                <div key={item.id} className='task-items' style={{backgroundColor: item.completed ? "#98FF98" : "white"}}>
+                                    <div className='task-title'>
+                                        <div className='task-field'>
+                                            <label className='title'>Title : </label>
+                                            <input
+                                                type="text"
+                                                value={item.title}
+                                                disabled={editable !== item.id}
+                                                onChange={(e)=>editTask(e, item.id)}
+                                            />
+                                        </div>
+                                        <Check size={20} onClick={()=>completeTask(item.id)}/>
                                     </div>
-                                    <Check size={20} onClick={()=>completeTask(item.id)}/>
+                                    <div className='task-description'>
+                                        <label>Description : </label>
+                                        {editable === item.id ? (
+                                            <textarea
+                                                value={item.description ?? ""}
+                                                onChange={(e)=>editDescription(e, item.id)}
+                                                placeholder='Description'
+                                            />
+                                        ) : (
+                                            <p>{item.description || "No description"}</p>
+                                        )}
+                                    </div>
+                                    <div className='icon-group'>
+                                        {(editable !== item.id) ? <Pencil size={20} onClick={()=>setEditable(item.id)}/>
+                                        : <Save size={20} onClick={()=>saveTask(item.id)}/>}
+                                        <Trash size={20} onClick={()=>deleteTask(item.id)}/>
+                                    </div>
                                 </div>
-                                <div className='icon-group'>
-                                    {(editable !== item.id) ? <Pencil size={20} onClick={()=>setEditable(item.id)}/>
-                                    : <Save size={20} onClick={()=>saveTask(item.id)}/>}
-                                    <Trash size={20} onClick={()=>deleteTask(item.id)}/>
-                                </div>
-                            </div>
-                        )
-                    })
-                }
+                            )
+                        })
+                    }
+                </div>
             </div>
-        </div>
-    </>
-  )
+        </>
+    )
 }
 
 export default Task
