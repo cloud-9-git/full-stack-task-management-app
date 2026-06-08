@@ -37,5 +37,5 @@ def get_current_user(token=Depends(outh2_scheme), db=Depends(get_db)):
     username = verify_token(token)
     user = db.query(User).filter(User.username == username).first()
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=401, detail="Invalid token")
     return user

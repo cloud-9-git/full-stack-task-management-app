@@ -20,7 +20,8 @@ def get_tasks(db=Depends(get_db), current_user=Depends(auth.get_current_user)):
         tasks = db.query(Task).filter(Task.user_id == current_user.id).all()
         return tasks
     except Exception as e:
-        print(f" Error {e}")
+        print(f"Error {e}")
+        raise HTTPException(status_code=500, detail="Failed to get tasks")
 
 @router.get("/get-task/{id}")
 def get_task_by_id(id:int, db=Depends(get_db), current_user=Depends(auth.get_current_user)):
