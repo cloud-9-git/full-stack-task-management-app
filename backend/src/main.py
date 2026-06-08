@@ -1,8 +1,6 @@
 from fastapi import FastAPI
 from .routers import task, user
-from .database import Base, engine
 from fastapi.middleware.cors import CORSMiddleware
-from .models import Task
 from .security.config import settings
 
 app = FastAPI()
@@ -20,8 +18,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"]
 )
-
-Base.metadata.create_all(bind=engine)
 
 @app.get("/")
 def root():
