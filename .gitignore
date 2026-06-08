@@ -2,6 +2,8 @@
 .env
 .env.*
 !.env.example
+.envrc
+.direnv/
 
 # Python virtual environments
 .venv/
@@ -22,8 +24,10 @@ __pycache__/
 .hypothesis/
 .ipynb_checkpoints/
 .coverage
+.coverage.*
 coverage.xml
 htmlcov/
+junit.xml
 build/
 dist/
 *.egg-info/
@@ -45,6 +49,8 @@ dist/
 dist-ssr/
 build/
 coverage/
+test-results/
+playwright-report/
 *.local
 
 # Local editor and OS files
@@ -68,3 +74,8 @@ temp/
 *.db-journal
 *.dump
 *.backup
+
+# Secret and certificate files
+*.pem
+*.key
+*.crt
