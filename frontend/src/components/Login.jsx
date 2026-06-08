@@ -9,12 +9,15 @@ const Login = () => {
 
     const handleOnSubmit=async(e)=>{
         e.preventDefault()
-        await instance.post(ENDPOINTS.LOGIN(),{username, password})
-        .then(res=>{
+        try {
+            const res = await instance.post(ENDPOINTS.LOGIN(), {username, password})
             localStorage.setItem("token", res.data.token)
             navigate("/tasks")
-        })
+        } catch (err) {
+            console.error("Login failed:", err)
+        }
     }
+
   return (
     <>
         <div className='container'>

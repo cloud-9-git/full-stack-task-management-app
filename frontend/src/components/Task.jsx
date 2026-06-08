@@ -7,54 +7,70 @@ const Task = () => {
     const [tasks, setTasks]=useState([])
     const [editable, setEditable] = useState(null)
     const [inputTask, setInputTask] = useState("")
+
     const editTask=(e, id)=>{
         setTasks(items => items.map(item=>item.id === id ? {...item, title:e.target.value}: item))
     }
+
     const saveTask=async(id)=>{
-        const task = tasks.filter(task=>task.id==id)[0]
-        console.log(task)
-        await instance.put(ENDPOINTS.UPDATE_TASK(id), task)
-        .then(()=>{
+        const task = tasks.find(t => t.id === id)
+        if (!task) return
+        try {
+            await instance.put(ENDPOINTS.UPDATE_TASK(id), task)
             toast.success("Task updated successfully")
             getAllTasks()
             setEditable(null)
-        })
-        .catch(err=>console.log(err))
+        } catch (err) {
+            console.error(err)
+        }
     }
 
     const completeTask=async(id)=>{
-        const task = tasks.filter(task=>task.id==id)[0]
-        task.completed = !task.completed
-        await instance.put(ENDPOINTS.UPDATE_TASK(id), task)
-        .then(()=>{
+        const task = tasks.find(t => t.id === id)
+        if (!task) return
+        const updatedTask = { ...task, completed: !task.completed }
+        try {
+            await instance.put(ENDPOINTS.UPDATE_TASK(id), updatedTask)
             toast.success("Task updated successfully")
             getAllTasks()
-        })
-        .catch(err=>console.log(err))
+        } catch (err) {
+            console.error(err)
+        }
     }
 
     const addTask=async()=>{
-        await instance.post(ENDPOINTS.CREATE_TASK(),{title:inputTask, completed:false})
-                        .then(()=>{
-                            toast.success("Task created successfully")
-                            getAllTasks()
-                            setInputTask("")
-                        })
-                        .catch(err=>console.log(err))
+        const trimmedTask = inputTask.trim()
+        if (!trimmedTask) {
+            toast.error("Task title cannot be empty")
+            return
+        }
+        try {
+            await instance.post(ENDPOINTS.CREATE_TASK(), { title: trimmedTask, completed: false })
+            toast.success("Task created successfully")
+            getAllTasks()
+            setInputTask("")
+        } catch (err) {
+            console.error(err)
+        }
     }
 
     const getAllTasks=async()=>{
-        await instance.get(ENDPOINTS.GET_TASK())
-        .then(res=>setTasks(res.data))
-        .catch(error=>console.log(error))
+        try {
+            const res = await instance.get(ENDPOINTS.GET_TASK())
+            setTasks(res.data)
+        } catch (err) {
+            console.error(err)
+        }
     }
 
     const deleteTask=async(id)=>{
-        await instance.delete(ENDPOINTS.DELETE_TASK(id))
-        .then(()=>{
+        try {
+            await instance.delete(ENDPOINTS.DELETE_TASK(id))
             toast.success("Task deleted successfully")
             getAllTasks()
-        }).catch(err=>console.log(err))
+        } catch (err) {
+            console.error(err)
+        }
     }
 
     useEffect(()=>{
